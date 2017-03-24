@@ -3,20 +3,20 @@ pragma solidity ^0.4.0;
 contract LeaseContract {
 	address public owner;
 	address public leasee;
-	uint balance;
+	LeaseCoin leaseAmt;
 	uint leaseStart;
 	uint leaseEnd;
 	bool ended;
 	
-	function LeaseContract(address _theLeasee,uint _theLeaseEnd) {
+	function LeaseContract(address _theLeasee,uint _theLeaseEnd,LeaseCoin _leaseAmt) {
 		owner = msg.sender;
 		leasee = _theLeasee;
-		balance = 1000;
+		leaseAmt = _leaseAmt;
 		leaseStart = now;
 		leaseEnd = _theLeaseEnd;
 	}
 
-	event LeaseEnded(address leasee, uint balance, uint leaseEnd);
+	event LeaseEnded(address leasee, LeaseCoin leaseAmt, uint leaseEnd);
 
 	///function that validates if the lease is still valid and if so deduct balance accordingly
 	// if lease is invalid throw error. If balance is empty, trigger leaseEnded event
@@ -30,12 +30,12 @@ contract LeaseContract {
 		if(now == (leaseStart + leaseEnd)) {
 			LeaseEnded(msg.sender,balance,leaseEnd);
 		}
-				
-		balance -= 1;
+		
+		leaseAmt.deductFee(msg.sender);		
 
-		if(balance == 0) {
+		if(leaseAmt.queryBalance() == 0) {
 			ended = true;
-			LeaseEnded(msg.sender,balance,leaseEnd);
+			LeaseEnded(msg.sender,leaseAmt,leaseEnd);
 		}
 	}
 
@@ -50,6 +50,6 @@ contract LeaseContract {
 		if(leasee != msg.sender) {
 			throw;
 		}
-		balance += msg.value;
+		leaseAmt.send(msg.sender,msg.value);
 	}
 }
