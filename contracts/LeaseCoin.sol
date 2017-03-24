@@ -9,7 +9,7 @@ contract LeaseCoin {
 	}
 	
 	function mint(address owner,uint amount) {
-		if(msg.sendr != owner) {
+		if(msg.sender != owner) {
 			return;
 		}
 		balances[owner] += amount;
